@@ -211,8 +211,9 @@ class Engine:
             
         print("[MİMARİ BİLGİ] Sistem Semaphore(1) bariyeri ile güçlendirilmiştir (Belgeler sırayla, birer birer işlenir).\n")
         
-        # Ana işlemi merkezi fonksiyona pasla
-        await self.process_files(files)
-            
+        # Ana işlemi merkezi fonksiyona pasla ve sonuçları döndür
+        results = await self.process_files(files)
+        
         elapsed = time.time() - start_time
         print(f"\n[SİSTEM KAPANDI] İşlem başarıyla tamamlandı. Toplam Süre: {elapsed:.2f} saniye")
+        return results
