@@ -13,10 +13,17 @@ class Settings(BaseSettings):
     gemini_api_key: str = ""
     input_dir: str = "data/input"
     output_dir: str = "data/output"
-    model_name: str = "gemini-2.0-flash"
+    model_name: str = "gemini-2.5-flash"
     
     # SaaS Veritabanı Yapılandırması (SQLite veya PostgreSQL)
     database_url: str = Field(default="sqlite+aiosqlite:///data/saas_db.sqlite", alias="DATABASE_URL")
+    
+    # Mail Bot Yapılandırması (IMAP — Gmail, Outlook vb.)
+    mail_imap_server: str = Field(default="imap.gmail.com", alias="MAIL_IMAP_SERVER")
+    mail_imap_port: int   = Field(default=993, alias="MAIL_IMAP_PORT")
+    mail_address: str     = Field(default="", alias="MAIL_ADDRESS")
+    mail_password: str    = Field(default="", alias="MAIL_PASSWORD")
+    mail_check_interval: int = Field(default=60, alias="MAIL_CHECK_INTERVAL")  # saniye
     
     # '.env' dosyasından gizli keyleri ve yolları yükleyerek
     # 'Global değişken yasağı'nı uyguluyoruz.
