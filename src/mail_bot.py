@@ -22,6 +22,7 @@ import sys
 import re
 import io
 from pathlib import Path
+from datetime import datetime
 from email.header import decode_header
 from email.message import Message
 
@@ -124,10 +125,14 @@ def _okunmamis_mailleri_isle(imap_baglantisi: imaplib.IMAP4_SSL, hedef_dizin: Pa
     # Gelen kutusu seçimi
     imap_baglantisi.select("INBOX")
     
+    # Sadece bugünden itibaren gelen okunmamış mailleri tara (IMAP format: DD-Mon-YYYY)
+    bugun_imap = datetime.now().strftime("%d-%b-%Y")
+    arama_kriteri = f'(UNSEEN SINCE "{bugun_imap}")'
+    
     # Okunmamış mesajların ID'lerini al
-    durum, mesaj_idleri = imap_baglantisi.search(None, "UNSEEN")
+    durum, mesaj_idleri = imap_baglantisi.search(None, arama_kriteri)
     if durum != "OK" or not mesaj_idleri[0]:
-        print("[MAIL BOT] Gelen kutusunda yeni (okunmamış) mesaj bulunamadı.")
+        print(f"[MAIL BOT] Gelen kutusunda bugune ait ({bugun_imap}) yeni mesaj bulunamadi.")
         return []
     
     id_listesi = mesaj_idleri[0].split()

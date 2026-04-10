@@ -2,11 +2,11 @@ PyMuPDF>=1.23.0
 unstructured>=0.11.0
 # Ana AI ve Pydantic kütüphaneleri
 google-genai==0.3.0
-pydantic==2.6.1
+pydantic>=2.9.0
 pydantic-settings>=2.0
 
 # Excel Raporlama
-pandas==2.2.0
+pandas>=2.2.3
 openpyxl==3.1.2
 
 # Sistem Mimarisi & Hata Yönetimi
