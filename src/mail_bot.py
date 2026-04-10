@@ -20,9 +20,13 @@ import imaplib
 import email
 import sys
 import re
+import io
 from pathlib import Path
 from email.header import decode_header
 from email.message import Message
+
+# Windows terminalinde Turkce karakter ve sembol sorunlarini onlemek icin stdout'u UTF-8'e zorla
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 # Proje kök dizinini Python path'ine ekle (doğrudan modül olarak çalıştırılabilmek için)
 sys.path.append(str(Path(__file__).parent.parent))
@@ -82,7 +86,7 @@ def _ekleri_indir(mail_mesaji: Message, hedef_dizin: Path) -> list[Path]:
         
         # Sadece desteklenen uzantılardaki ekleri işle
         if uzanti not in DESTEKLENEN_UZANTILAR:
-            print(f"[MAIL BOT] Atlandı → '{dosya_adi}' (desteklenmeyen uzantı: {uzanti})")
+            print(f"[MAIL BOT] Atlandi -> '{dosya_adi}' (desteklenmeyen uzanti: {uzanti})")
             continue
         
         kayit_yolu = hedef_dizin / dosya_adi
@@ -97,7 +101,7 @@ def _ekleri_indir(mail_mesaji: Message, hedef_dizin: Path) -> list[Path]:
         with open(kayit_yolu, "wb") as f:
             f.write(parca.get_payload(decode=True))
         
-        print(f"[MAIL BOT] ✅ İndirildi → {kayit_yolu.name}")
+        print(f"[MAIL BOT] [OK] Indirildi -> {kayit_yolu.name}")
         indirilenler.append(kayit_yolu)
     
     return indirilenler
@@ -139,7 +143,7 @@ def _okunmamis_mailleri_isle(imap_baglantisi: imaplib.IMAP4_SSL, hedef_dizin: Pa
         
         gonderen = mesaj.get("From", "Bilinmeyen Gönderici")
         konu     = mesaj.get("Subject", "(Konu Yok)")
-        print(f"[MAIL BOT] 📧 İşleniyor → Gönderen: {gonderen} | Konu: {konu}")
+        print(f"[MAIL BOT] Islenecek -> Gonderen: {gonderen} | Konu: {konu}")
         
         # Ekleri indir
         indirilenler = _ekleri_indir(mesaj, hedef_dizin)
@@ -163,7 +167,7 @@ async def _tek_tarama_dongusu() -> list[Path]:
     def _senkron_tarama():
         # Ayarlar .env'den okunur; eksikse erken çık
         if not settings.mail_address or not settings.mail_password:
-            print("[MAIL BOT] ❌ MAIL_ADDRESS veya MAIL_PASSWORD .env'de tanımlı değil.")
+            print("[MAIL BOT] [HATA] MAIL_ADDRESS veya MAIL_PASSWORD .env'de tanimli degil.")
             return []
         
         hedef_dizin = settings.get_input_path()
@@ -171,10 +175,10 @@ async def _tek_tarama_dongusu() -> list[Path]:
         
         try:
             # SSL üzerinden IMAP sunucusuna bağlan
-            print(f"[MAIL BOT] 🔌 {settings.mail_imap_server}:{settings.mail_imap_port} bağlantısı kuruluyor...")
+            print(f"[MAIL BOT] [BAGLAN] {settings.mail_imap_server}:{settings.mail_imap_port} baglantisi kuruluyor...")
             baglanti = imaplib.IMAP4_SSL(settings.mail_imap_server, settings.mail_imap_port)
             baglanti.login(settings.mail_address, settings.mail_password)
-            print("[MAIL BOT] 🔓 IMAP girişi başarılı.")
+            print("[MAIL BOT] [OK] IMAP girisi basarili.")
             
             indirilenler = _okunmamis_mailleri_isle(baglanti, hedef_dizin)
             
@@ -183,10 +187,10 @@ async def _tek_tarama_dongusu() -> list[Path]:
         
         except imaplib.IMAP4.error as e:
             # Kimlik doğrulama veya sunucu hatası
-            print(f"[MAIL BOT] ❌ IMAP Hatası: {e}")
+            print(f"[MAIL BOT] [HATA] IMAP Hatasi: {e}")
             return []
         except Exception as e:
-            print(f"[MAIL BOT] ❌ Beklenmedik hata: {e}")
+            print(f"[MAIL BOT] [HATA] Beklenmedik hata: {e}")
             return []
     
     # Senkron IMAP çağrısını ayrı thread'de koştur (Event loop'u bloke etmeden)
@@ -213,21 +217,21 @@ async def mail_bot_calistir():
     engine = Engine()
     
     while True:
-        print(f"\n[MAIL BOT] 🔍 Yeni tarama başlıyor...")
+        print(f"\n[MAIL BOT] Yeni tarama basliyor...")
         
         # 1. IMAP'ı tara ve ekleri indir
         indirilen_dosyalar = await _tek_tarama_dongusu()
         
         # 2. İndirilen dosya varsa Engine'e pasla
         if indirilen_dosyalar:
-            print(f"[MAIL BOT] 🚀 {len(indirilen_dosyalar)} dosya Engine'e gönderiliyor...")
+            print(f"[MAIL BOT] {len(indirilen_dosyalar)} dosya Engine'e gonderiliyor...")
             await engine.process_files(indirilen_dosyalar)
-            print("[MAIL BOT] ✅ Analiz tamamlandı, veritabanı güncellendi.")
+            print("[MAIL BOT] [OK] Analiz tamamlandi, veritabani guncellendi.")
         else:
-            print("[MAIL BOT] 💤 Yeni ek bulunamadı, beklemeye geçiliyor.")
+            print("[MAIL BOT] Yeni ek bulunamadi, beklemeye geciliyor.")
         
         # 3. Bir sonraki taramaya kadar bekle
-        print(f"[MAIL BOT] ⏱️  Sonraki tarama {settings.mail_check_interval} saniye sonra...")
+        print(f"[MAIL BOT] Sonraki tarama {settings.mail_check_interval} saniye sonra...")
         await asyncio.sleep(settings.mail_check_interval)
 
 
@@ -239,4 +243,4 @@ if __name__ == "__main__":
     try:
         asyncio.run(mail_bot_calistir())
     except KeyboardInterrupt:
-        print("\n[MAIL BOT] 🛑 Bot kullanıcı tarafından durduruldu.")
+        print("\n[MAIL BOT] Bot kullanici tarafindan durduruldu.")
