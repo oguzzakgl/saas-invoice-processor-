@@ -1,0 +1,34 @@
+# Gizli ortam değişkenleri — KESİNLİKLE GitHub'a gönderilmez
+.env
+
+# Veritabanı dosyaları
+data/saas_db.sqlite
+data/*.sqlite
+
+# Çıktı raporları
+data/output/
+
+# Yüklenen giriş belgeleri
+data/input/
+
+# Python önbelleği
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# IDE dosyaları
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS dosyaları
+.DS_Store
+Thumbs.db
